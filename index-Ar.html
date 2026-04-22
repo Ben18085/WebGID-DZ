@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <nav>
+  <a href="index-Ar.html">عربي</a>
+  <a href="index.html">English</a>
+</nav>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="./lib/leaflet-measure.css">
+    <link rel="stylesheet" href="./lib/MarkerCluster.css">
+    <link rel="stylesheet" href="./lib/MarkerCluster.Deafault.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link rel="stylesheet" href="./dist/style.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com"/>
+    <link rel="stylesheet" href="https://unpkg.com"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com"
+            integrity="sha256-x19foWzL5W201d4a7F8tY7oW2eC+p3a+yUo1nK8r8c4="
+            crossorigin=""></script>
+    <script>(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
+        ({key: "AIzaSyA6myHzS10YXdcazAFalmXvDkrYCp5cLc8", v: "weekly"});</script>        
+
+    <title>Leaflet Geoproject</title>
+</head>
+<body>
+  <!-- Navigation -->
+<style>
+        :root {
+            --primary-color: #1a6b3c;
+            --primary-dark: #0d4526;
+            --primary-light: #2d9b5a;
+            --accent:  #e8b84b;
+            --bg-color: #f4f6f3;
+            --card-bg: #ffffff;
+            --text-main: #1c2b1e;
+            --text-secondary: #5a6b5c;
+            --border-color: #d0dbd1;
+            --shadow-sm: 0 1px 4px rgba(26,107,60,0.08);
+            --shadow-md: 0 4px 12px rgba(26,107,60,0.12);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0; padding: 0;
+        }
+        /* NAV */
+        nav.topnav {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            position: sticky; top:0; z-index:1000;
+            min-height: 56px;
+            flex-wrap: wrap;
+        }
+        nav.topnav .brand {
+            font-family: 'Georgia', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent);
+            letter-spacing: 1px;
+            margin-right: 2rem;
+            text-decoration: none;
+        }
+        nav.topnav a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 0.85rem 1rem;
+            font-size: 0.88rem;
+            transition: color 0.2s, background 0.2s;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        nav.topnav a:hover, nav.topnav a.active {
+            color: #fff;
+            background: rgba(255,255,255,0.12);
+        }
+        </style>
+  
+<nav class="topnav">
+    <a class="brand" href="#">النظام الجيوغرافي الجزائري </a>
+     <a href="#" class="active">الصفحة الرئيسية </a>
+    <a href="Bulk-coord-converter-Ar.html">التحويل الكمي للإحداثيات</a>
+     <a href="coord-converter-Ar.html">تحويل الإحداثيات </a>
+    <a href="About this site-Ar.html">بخصوص الموقع</a>
+</nav>
+   
+        <!-- Map definition -->
+<div id="map" style="height: 820px">
+        <!-- Map Container -->
+        <div id="map"></div>
+    
+      
+         <!--Map coordinate--> 
+         <style>
+           
+#coordinate-display {
+    position: absolute;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000; /* Must be higher than map z-index */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#coords-box {
+    /* Glassmorphism Effect */
+    background: rgba(0, 153, 255, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    color: white;
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 13px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    white-space: nowrap;
+}
+
+#toggle-coords {
+    background: white;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+#toggle-coords:hover {
+    transform: scale(1.1);
+}
+
+/* Class to hide the coordinates */
+#hidden-coords {
+    opacity: 0;
+    visibility: hidden;
+}
+         </style>
+<div id="coordinate-display">
+    <div id="coords-box">
+        <span id="coords">حرك الفأرة على الخريطة</span>
+    </div>
+    <button id="toggle-coords" title="Toggle Coordinates">🌐</button>
+</div>
+
+  
+
+<!--map control-->
+        <div class="map-controls">
+    <button class="custom-btn zoom-to-layer" title="قم بتكبير المنطقة  ">📍</button>
+    <button class="custom-btn" onclick="fullScreenView()" title="ملء الشاشة">⛶</button>
+</div>
+        
+          
+                   <!-- geojsonFileInput -->
+  <div> <input type="file" id="FileInput" accept=".geojson,.json, .kml, .kmz,.txt,.csv, .xlsx"
+    style="position: absolute; z-index: 2000; top: 200px ; left:10px"/></div>
+  
+<!-- Dropdown Menu -->
+ <div class="container">
+   <label for="citySelect">إختر مدينة:</label>
+        <select id="citySelect" onchange="changeCity()">
+            <option value="" disabled selected>إختر ولاية</option>
+            <option value="Adrar">01 - أدرار</option>
+            <option value="Chlef">02 - الشلف</option>
+            <option value="Laghouat">03 - الأغواط</option>
+            <option value="Oum El Bouaghi">04 - أم البواقي</option>
+            <option value="Batna">05 - باتنة</option>
+            <option value="Béjaïa">06 - بجاية</option>
+            <option value="Biskra">07 - بسكرة</option>
+            <option value="Béchar">08 - بشار</option>
+            <option value="Blida">09 - البليدة</option>
+            <option value="Bouira">10 - البويرة</option>
+            <option value="Tamanrasset">11 -  تمنراست</option>
+            <option value="Tébessa">12 - تبسة</option>
+            <option value="Tlemcen">13 - تلمسان</option>
+            <option value="Tiaret">14 - تيارت</option>
+            <option value="Tizi Ouzou">15 - تيزي وزو </option>
+            <option value="Alger">16 - الجزائر العاصمة</option>
+            <option value="Djelfa">17 - الجلفة </option>
+             <option value="Jijel">18 - جيجل</option>
+            <option value="Sétif">19 - سطيف</option>
+            <option value="Saïda">20 - سعيدة</option>
+            <option value="Skikda">21 - سكيكدة</option>
+            <option value="Sidi Bel Abbès">22 - سيدي بلعباس</option>
+            <option value="Annaba">23 - عنابة</option>
+            <option value="Guelma">24 - قالمة</option>
+            <option value="Constantine">25 - قسنطينة</option>
+            <option value="Médéa">26 - المدية</option>
+            <option value="Mostaganem">27 - مستغانم</option>
+            <option value="MSila">28 - المسيلة</option>
+            <option value="Mascara">29 - معسكر</option>
+            <option value="Ouargla">30 - ورڨلة</option>
+            <option value="Oran">31 - وهران</option>
+            <option value="El Bayadh">32 - البيض</option>
+            <option value="Illizi">33 - إيليزي</option>
+            <option value="Bordj Bou Arreridj">34 - برج بوعريريج</option>
+            <option value="Boumerdès">35 - بومرداس</option>
+            <option value="El Tarf">36 - الطارف</option>
+            <option value="Tindouf">37 - تندوف</option>
+            <option value="Tissemsilt">38 - تيسمسيلت</option>
+            <option value="El Oued">39 - الوادي</option>
+            <option value="Khenchela">40 - خنشلة</option>
+            <option value="Souk Ahras">41 - سوق أهراس</option>
+            <option value="Tipaza">42 - تيبازة</option>
+            <option value="Mila">43 - ميلة</option>
+            <option value="Aïn Defla">44 - عين الدفلة</option>
+            <option value="Naâma">45 - النعامة</option>
+            <option value="Aïn Témouchent">46 - عين تموشنت</option>
+            <option value="Ghardaïa">47 - غرداية</option>
+            <option value="Relizane">48 - غيليزان </option>
+            <option value="Timimoun">49 - تيميمون</option>
+            <option value="Bordj Badji Mokhtar">50 - برج باجي مختار</option>
+            <option value="Ouled Djellal">51 - أولاد جلال</option>
+            <option value="Béni Abbès">52 - بني عباس</option>
+            <option value="In Salah">53 - إن صالح</option>
+            <option value="In Guezzam">54 - إن ڨزام</option>
+            <option value="Touggourt">55 - توڨرت</option>
+            <option value="Djanet">56 - جنات</option>
+            <option value="El MGhair">57 - المغير</option>
+            <option value="El Meniaa">58 - المنيعة</option>
+              <option value="Aflou">59 - أفلو</option>
+            <option value="Barika">60 - بريكة</option>
+            <option value="El Kantara">61 - القنطرة</option>
+            <option value="Bir El Ater">62 - بئر العاتر</option>
+            <option value="El Aricha">63 - العريشة </option>
+            <option value="Ksar Chellala">64 - قصر الشلالة</option>
+            <option value="Aïn Ouessara">65 - عين وسارة</option>
+            <option value="Messâad">66 - مسعد</option>
+            <option value="Ksar El Boukhari">67 - قصر البخاري</option>
+            <option value="Boussâada">68 - بوسعادة </option>
+             <option value="Labiodh Sidi cheikh ">69 - الأبيض سيدي الشيخ </option>
+        </select>
+         <!--Button run-->
+    <button Id="btnRun">إنتقل</button>
+        </div>
+      </div>
+      </div>
+   
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="./lib/leaflet.browser.print.min.js"></script>
+    <script src="./lib/leaflet-measure.js"></script>
+    <script src="./data/communes.geojson"></script>
+    <script src="./data/Réservoir.geojson"></script>
+    <script src="./lib/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="./dist/main-Ar.js"></script>
+    <script src="./dist/web-GIS-Ar.js"></script>
+    <script src="./jquery.min.js"></script>
+    <script src="https://unpkg.com"></script>
+    <script src="https://unpkg.com"
+       integrity="sha256-lPShGsbyg0K7WaZ3ZdrBCXf4f80uR4/Vd9aQVBnUEqM="
+       crossorigin=""></script>
+  </body>        
+</html>
+
+
+
+
+    
+

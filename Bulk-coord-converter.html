@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bulk coordinate converter — UTM WGS84, UTM Nord Sahara 1959, Lambert Voirol Ancien, decimal degrees, DMS. Process Excel, CSV or text files for Algeria geodetic data.">
+    <meta name="author" content="ABConsultingDZ">
+    <title>Bulk Coordinates Converter — Algeria Geodetic (NS59 &amp; Lambert Voirol)</title>
+
+    <style>
+        :root {
+            --primary-color: #1a6b3c;
+            --primary-dark: #0d4526;
+            --primary-light: #2d9b5a;
+            --accent:  #e8b84b;
+            --bg-color: #f4f6f3;
+            --card-bg: #ffffff;
+            --text-main: #1c2b1e;
+            --text-secondary: #5a6b5c;
+            --border-color: #d0dbd1;
+            --shadow-sm: 0 1px 4px rgba(26,107,60,0.08);
+            --shadow-md: 0 4px 12px rgba(26,107,60,0.12);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --success-color: #2a9d8f;
+        }
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0; padding: 0;
+        }
+        nav.topnav {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            position: sticky; top:0; z-index:1000;
+            min-height: 56px;
+            flex-wrap: wrap;
+        }
+        nav.topnav .brand {
+            font-family: 'Georgia', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent);
+            letter-spacing: 1px;
+            margin-right: 2rem;
+            text-decoration: none;
+        }
+        nav.topnav a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 0.85rem 1rem;
+            font-size: 0.88rem;
+            transition: color 0.2s, background 0.2s;
+        }
+        nav.topnav a:hover, nav.topnav a.active { color:#fff; background:rgba(255,255,255,0.12); }
+
+        .container { max-width:1200px; margin:1.5rem auto; padding:0 1rem; }
+        .intro-section {
+            background: var(--card-bg);
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.25rem;
+            border-left: 5px solid var(--primary-color);
+            box-shadow: var(--shadow-sm);
+        }
+        .intro-section h1 { font-size:1.1rem; margin:0 0 0.25rem; color:var(--primary-dark); font-family:'Georgia',serif; }
+        .intro-section p { margin:0; color:var(--text-secondary); font-size:0.9rem; }
+
+        .bulk-container { display:grid; gap:1.4rem; }
+
+        .tool-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .tool-header {
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary-color));
+            color:#fff;
+            padding: 0.7rem 1rem;
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .tool-title { font-size:0.92rem; font-weight:700; margin:0; }
+        .tool-badge {
+            font-size:0.7rem; background:var(--accent); color:var(--primary-dark);
+            padding:2px 8px; border-radius:20px; font-weight:700;
+        }
+        .tool-body { padding:1rem; }
+
+        .input-label { display:block; font-size:0.78rem; font-weight:600; color:var(--text-secondary); margin-bottom:3px; text-transform:uppercase; letter-spacing:0.4px; }
+        .form-input, .form-select {
+            width:100%; padding:0.42rem 0.65rem;
+            border:1px solid var(--border-color); border-radius:var(--radius-sm);
+            font-size:0.9rem; background:#fafafa; color:var(--text-main);
+            transition:border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-input:focus, .form-select:focus { outline:none; border-color:var(--primary-color); box-shadow:0 0 0 3px rgba(26,107,60,0.12); }
+
+        .btn { padding:0.45rem 1rem; border:none; border-radius:var(--radius-sm); cursor:pointer; font-size:0.88rem; font-weight:600; transition:all 0.2s; }
+        .btn-primary { background:var(--primary-color); color:#fff; }
+        .btn-primary:hover { background:var(--primary-dark); transform:translateY(-1px); }
+        .btn-outline { background:transparent; border:1.5px solid var(--primary-color); color:var(--primary-color); }
+        .btn-outline:hover { background:var(--primary-color); color:#fff; }
+        .btn-row { display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap; }
+
+        /* Drop zone */
+        .drop-zone {
+            border:2px dashed var(--primary-color);
+            border-radius:var(--radius-md);
+            padding:1.75rem 1rem;
+            text-align:center; background:#f8faf8;
+            transition:all 0.3s; cursor:pointer;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            gap:0.5rem;
+        }
+        .drop-zone:hover { background:#ecf5ef; transform:translateY(-2px); }
+        .drop-zone i { font-size:2.2rem; color:var(--primary-color); }
+
+        .paste-area {
+            width:100%; border:1px solid var(--border-color);
+            border-radius:var(--radius-sm); padding:0.75rem;
+            font-family:monospace; font-size:0.88rem;
+            resize:vertical; min-height:130px;
+        }
+        .paste-area:focus { outline:none; border-color:var(--primary-color); box-shadow:0 0 0 3px rgba(26,107,60,0.12); }
+
+        .mapping-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
+            gap:1rem; margin-top:1rem; padding:1rem;
+            background:#f4f7f4; border-radius:var(--radius-sm);
+            border:1px solid var(--border-color);
+        }
+        .mapping-item label { display:block; margin-bottom:0.4rem; font-size:0.82rem; font-weight:600; color:var(--text-secondary); }
+
+        /* Results table */
+        .table-responsive { margin-top:1.25rem; overflow-x:auto; border:1px solid var(--border-color); border-radius:var(--radius-sm); }
+        table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+        th { background:#1a6b3c; color:white; padding:0.65rem 0.75rem; text-align:left; font-weight:600; white-space:nowrap; }
+        td { padding:0.6rem 0.75rem; border-bottom:1px solid var(--border-color); white-space:nowrap; }
+        tr:hover td { background-color:#f0f6f2; }
+
+        #bulkMap { height:380px; width:100%; border-radius:var(--radius-md); margin-bottom:1.25rem; border:1px solid var(--border-color); }
+
+        .alert-box {
+            background:#e8f5ee; border:1px solid #a8d8b9;
+            border-radius:var(--radius-sm); padding:0.6rem 0.85rem;
+            font-size:0.88rem; color:var(--primary-dark);
+        }
+        .loading-spinner { text-align:center; color:var(--primary-color); margin:1rem 0; }
+
+        /* Footer */
+        .footer-info { background:var(--primary-dark); color:#cde8d5; padding:2rem 1.5rem 1rem; margin-top:2.5rem; }
+        .info-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:1.5rem; max-width:1200px; margin:0 auto; }
+        .info-col h5 { color:var(--accent); font-size:0.95rem; margin-bottom:0.75rem; }
+        .info-col ul { list-style:none; padding:0; margin:0; }
+        .info-col ul li { margin-bottom:0.35rem; font-size:0.85rem; }
+        .info-col a { color:#a8d8b9; text-decoration:none; }
+        .info-col a:hover { color:#fff; text-decoration:underline; }
+        .social-bar { display:flex; gap:0.75rem; margin-top:0.5rem; flex-wrap:wrap; }
+        .social-icon { width:32px; height:32px; background:rgba(255,255,255,0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#cde8d5 !important; font-size:0.85rem; transition:background 0.2s; }
+        .social-icon:hover { background:var(--primary-light); }
+        @media(max-width:600px){ .mapping-grid{grid-template-columns:1fr 1fr;} }
+    </style>
+
+    <!-- Font Awesome + Leaflet -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="topnav">
+    <a class="brand" href="#">WebGIS DZ</a>
+    <a href="index.html">Home</a>
+    <a href="#" class="active">Bulk Converter</a>
+    <a href="Coord-converter.html">Coordinates Converter</a>
+    <a href="About this site.html">About</a>
+</nav>
+
+<!-- Hidden datum selector (required by legacy scripts if present) -->
+<div style="display:none;">
+    <select id="mapDatum"><option value="WGS84" selected>WGS84</option></select>
+</div>
+
+<div class="container">
+
+    <div class="intro-section">
+        <h1>Bulk Coordinate Converter — Algeria Geodetic</h1>
+        <p>Process large batches of coordinates from Excel, CSV or pasted text.
+           Supported inputs: <strong>Decimal Degrees, DMS, UTM WGS84, UTM Nord Sahara 1959</strong>.
+           Outputs include <strong>WGS84, NS59 UTM</strong> and <strong>Lambert Voirol Ancien</strong>.
+        </p>
+    </div>
+
+    <div class="bulk-container">
+
+        <!-- STEP 1 — Load Data -->
+        <div class="tool-card">
+            <div class="tool-header">
+                <h2 class="tool-title"><span class="tool-badge">1</span>&nbsp; Load Data</h2>
+                <span style="font-size:0.85rem; color:rgba(255,255,255,0.7);">Upload a file or paste your data</span>
+            </div>
+            <div class="tool-body">
+                <div style="display:flex; gap:1.5rem; flex-wrap:wrap;">
+                    <!-- Paste -->
+                    <div style="flex:2; min-width:220px;">
+                        <label class="input-label"><i class="fas fa-paste"></i> Paste Text / CSV</label>
+                        <textarea id="pasteArea" class="paste-area"
+                            placeholder="Example:&#10;36.737, 3.086&#10;35.690, -0.641&#10;&#10;Or UTM NS59:&#10;31 N 500000 4000000"></textarea>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+                            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.88rem;cursor:pointer;">
+                                <input type="checkbox" id="hasHeaders" checked> Has header row
+                            </label>
+                            <button class="btn btn-primary" onclick="handlePasteData()">
+                                <i class="fas fa-arrow-right"></i> Process Data
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Upload -->
+                    <div style="flex:1; min-width:180px;">
+                        <label class="input-label"><i class="fas fa-file-import"></i> Upload File</label>
+                        <div id="dropZone" class="drop-zone" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span style="font-weight:600; color:var(--text-main);">Click or Drag &amp; Drop</span>
+                            <span style="font-size:0.78rem; color:var(--text-secondary);">.xlsx &nbsp;.csv &nbsp;.txt</span>
+                            <input type="file" id="fileInput" hidden accept=".csv,.txt,.xlsx,.xls">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="fileInfo" class="alert-box" style="display:none; margin-top:1rem;">
+                    <strong><i class="fas fa-info-circle"></i> File loaded:</strong>
+                    <span id="fileName"></span> — <span id="rowCount"></span> rows
+                </div>
+                <div id="loadingIndicator" class="loading-spinner" style="display:none;">
+                    <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+                    <p style="margin-top:0.4rem; font-weight:600;">Processing…</p>
+                </div>
+                <div class="table-responsive" style="margin-top:1rem; max-height:190px; overflow-y:auto;">
+                    <table id="previewTable"><thead></thead><tbody></tbody></table>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2 — Configuration -->
+        <div id="configSection" class="tool-card" style="display:none;">
+            <div class="tool-header">
+                <h2 class="tool-title"><span class="tool-badge">2</span>&nbsp; Configuration</h2>
+                <span style="font-size:0.85rem; color:rgba(255,255,255,0.7);">Select your input coordinate format</span>
+            </div>
+            <div class="tool-body">
+                <div style="display:flex; gap:2rem; flex-wrap:wrap;">
+                    <div style="flex:2; min-width:240px;">
+                        <label class="input-label">Input Coordinate Format</label>
+                        <select id="conversionType" class="form-select" onchange="updateMappingUI()">
+                            <option value="decimal">Decimal Degrees (Lat, Lon) — WGS84</option>
+                            <option value="dms">Degrees, Minutes, Seconds (DMS)</option>
+                            <option value="utm">UTM Standard (WGS84)</option>
+                            <option value="utm_ns59">UTM Nord Sahara 1959 (Clarke 1880)</option>
+                        </select>
+                    </div>
+                    <div style="flex:1; min-width:160px;">
+                        <label class="input-label">Output Decimal Precision</label>
+                        <input type="number" id="decimalPrecision" class="form-input" value="3" min="0" max="10">
+                    </div>
+                    <div style="flex:1; min-width:160px;">
+                        <label class="input-label">Lambert Zone (output)</label>
+                        <select id="lambertZoneOut" class="form-select">
+                            <option value="1">Zone I — Nord Algérie</option>
+                            <option value="2">Zone II — Sud Algérie</option>
+                            <option value="0">Don't output Lambert</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3 — Column Mapping -->
+        <div id="mappingSection" class="tool-card" style="display:none;">
+            <div class="tool-header">
+                <h2 class="tool-title"><span class="tool-badge">3</span>&nbsp; Column Mapping</h2>
+                <span style="font-size:0.85rem; color:rgba(255,255,255,0.7);">Assign your columns to the required fields</span>
+            </div>
+            <div class="tool-body">
+
+                <!-- Decimal -->
+                <div id="mapping-decimal" class="mapping-grid">
+                    <div class="mapping-item"><label>Latitude (Y)</label><select id="colLat" class="form-select column-select"></select></div>
+                    <div class="mapping-item"><label>Longitude (X)</label><select id="colLon" class="form-select column-select"></select></div>
+                </div>
+
+                <!-- DMS -->
+                <div id="mapping-dms" class="mapping-grid" style="display:none; grid-template-columns:repeat(3,1fr);">
+                    <div class="mapping-item"><label>Lat Degrees</label><select id="colLatDeg" class="form-select column-select"></select></div>
+                    <div class="mapping-item"><label>Lat Minutes</label><select id="colLatMin" class="form-select column-select"></select></div>
+                    <div class="mapping-item"><label>Lat Seconds</label><select id="colLatSec" class="form-select column-select"></select></div>
+                    <div class="mapping-item"><label>Lon Degrees</label><select id="colLonDeg" class="form-select column-select"></select></div>
+                    <div class="mapping-item"><label>Lon Minutes</label><select id="colLonMin" class="form-select column-select"></select></div>
+                    <div class="mapping-item"><label>Lon Seconds</label><select id="colLonSec" class="form-select column-select"></select></div>
+                    <div class="mapping-item"><label>N/S Indicator</label><select id="colNS" class="form-select column-select"></select></div>
+                    <div class="mapping-item"><label>E/W Indicator</label><select id="colEW" class="form-select column-select"></select></div>
+                </div>
+
+                <!-- UTM WGS84 -->
+                <div id="mapping-utm" class="mapping-grid" style="display:none;">
+                    <div class="mapping-item">
+                        <label>Zone</label>
+                        <select id="colZone" class="form-select column-select" data-allow-constant="true" data-constant-input="zoneConstW" onchange="handleColumnSelectChange(this)"></select>
+                        <div id="zoneConstW" style="display:none; margin-top:0.5rem;">
+                            <input type="number" id="manualZone" class="form-input" placeholder="31">
+                        </div>
+                    </div>
+                    <div class="mapping-item">
+                        <label>Hemisphere</label>
+                        <select id="colHemi" class="form-select column-select" data-allow-constant="true" data-constant-input="hemiConstW" onchange="handleColumnSelectChange(this)"></select>
+                        <div id="hemiConstW" style="display:none; margin-top:0.5rem;">
+                            <select id="manualHemi" class="form-select"><option value="N">North (N)</option><option value="S">South (S)</option></select>
+                        </div>
+                    </div>
+                    <div class="mapping-item"><label>Easting (X)</label><select id="colEast" class="form-select column-select"></select></div>
+                    <div class="mapping-item"><label>Northing (Y)</label><select id="colNorth" class="form-select column-select"></select></div>
+                </div>
+
+                <!-- UTM NS59 -->
+                <div id="mapping-utm-ns59" class="mapping-grid" style="display:none;">
+                    <div class="mapping-item">
+                        <label>Zone (NS59)</label>
+                        <select id="colNS59Zone" class="form-select column-select" data-allow-constant="true" data-constant-input="zoneConstN" onchange="handleColumnSelectChange(this)"></select>
+                        <div id="zoneConstN" style="display:none; margin-top:0.5rem;">
+                            <input type="number" id="manualNS59Zone" class="form-input" placeholder="31">
+                        </div>
+                    </div>
+                    <div class="mapping-item">
+                        <label>Hemisphere</label>
+                        <select id="colNS59Hemi" class="form-select column-select" data-allow-constant="true" data-constant-input="hemiConstN" onchange="handleColumnSelectChange(this)"></select>
+                        <div id="hemiConstN" style="display:none; margin-top:0.5rem;">
+                            <select id="manualNS59Hemi" class="form-select"><option value="N">North (N)</option><option value="S">South (S)</option></select>
+                        </div>
+                    </div>
+                    <div class="mapping-item"><label>Easting (X)</label><select id="colNS59East" class="form-select column-select"></select></div>
+                    <div class="mapping-item"><label>Northing (Y)</label><select id="colNS59North" class="form-select column-select"></select></div>
+                </div>
+
+                <div class="btn-row" style="margin-top:1.25rem;">
+                    <button id="processBtn" class="btn btn-primary" onclick="convertData()" style="flex:1;">
+                        <i class="fas fa-sync-alt"></i>&nbsp; Convert All &amp; Show on Map
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4 — Results -->
+        <div id="resultsSection" class="tool-card" style="display:none;">
+            <div class="tool-header">
+                <h2 class="tool-title"><span class="tool-badge">4</span>&nbsp; Results</h2>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <button class="btn btn-outline" style="border-color:var(--accent);color:var(--accent);" onclick="exportResults('excel')"><i class="fas fa-file-excel"></i> Excel</button>
+                    <button class="btn btn-outline" style="border-color:var(--accent);color:var(--accent);" onclick="exportResults('csv')"><i class="fas fa-file-csv"></i> CSV</button>
+                    <button class="btn btn-outline" style="border-color:var(--accent);color:var(--accent);" onclick="exportResults('kml')"><i class="fas fa-globe-americas"></i> KML</button>
+                </div>
+            </div>
+            <div class="tool-body">
+                <div id="bulkMap"></div>
+                <div class="table-responsive">
+                    <table id="resultsTable"><thead></thead><tbody></tbody></table>
+                </div>
+                <p style="text-align:center; color:var(--text-secondary); margin-top:1rem; font-size:0.85rem;">
+                    * Preview shows up to 100 rows. Downloads include all records.
+                </p>
+            </div>
+        </div>
+
+    </div><!-- /bulk-container -->
+</div><!-- /container -->
+
+<!-- Footer -->
+<div class="footer-info">
+    <div class="info-grid">
+        <div class="info-col">
+            <h5>Systems Supported</h5>
+            <ul>
+                <li>Geographic DD / DMS (WGS84)</li>
+                <li>UTM WGS84</li>
+                <li>UTM Nord Sahara 1959 (Clarke 1880)</li>
+                <li>Lambert Voirol Ancien (I &amp; II)</li>
+            </ul>
+        </div>
+        <div class="info-col">
+            <h5>Resources</h5>
+            <ul>
+                <li><a href="Coord-converter.html">Single Coordinate Converter</a></li>
+                <li><a href="https://abconsultdz.wordpress.com/">ABConsultingDZ Blog</a></li>
+                <li><a href="About this site.html">About this site</a></li>
+            </ul>
+        </div>
+        <div class="info-col">
+            <h5>Follow Us</h5>
+            <p>Join our GIS professional community.</p>
+            <div class="social-bar">
+                <a href="https://www.linkedin.com/in/ahmed-benayache-7b141b72" class="social-icon" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="" class="social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </div>
+    <div style="text-align:center; margin-top:2rem; color:#8db89a; font-size:0.82rem;">
+        &copy; 2026 ABConsultingDZ Office. All rights reserved.
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+
+  
+<!-- Scripts con DEFER para no bloquear renderizado -->
+    <script defer src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Scripts locales con DEFER -->
+    <script defer src="./dist/js/webgis_utm_lat_lon.js?v=3"></script>
+    <script defer src="./dist/js/bulk_converter.js?v=3"></script>
+
+<script> (function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9dcaca93eeae12e4',t:'MTc3MzU3MDA4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"cb30c6583db648459728553cc2c00ef1","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+
+</body>
+</html>

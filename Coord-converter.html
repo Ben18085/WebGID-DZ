@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="dns-prefetch" href="https://a.tile.openstreetmap.org">
+    <link rel="dns-prefetch" href="https://b.tile.openstreetmap.org">
+    <link rel="dns-prefetch" href="https://c.tile.openstreetmap.org">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <meta name="description" content="Convert coordinates between UTM WGS84, UTM Nord Sahara 1959, Lambert Voirol Ancien, geographic decimal degrees and DMS — Algeria geodetic tool.">
+    <meta name="keywords" content="coordinate converter, utm, nord sahara 1959, lambert voirol ancien, algeria, geographic, decimal degrees, degrees minutes seconds, clarke 1880, geodetic calculator">
+    <meta name="author" content="ABConsultingDZ">
+    <title>Leflet geoproject</title>
+
+    <style>
+        :root {
+            --primary-color: #1a6b3c;
+            --primary-dark: #0d4526;
+            --primary-light: #2d9b5a;
+            --accent:  #e8b84b;
+            --bg-color: #f4f6f3;
+            --card-bg: #ffffff;
+            --text-main: #1c2b1e;
+            --text-secondary: #5a6b5c;
+            --border-color: #d0dbd1;
+            --shadow-sm: 0 1px 4px rgba(26,107,60,0.08);
+            --shadow-md: 0 4px 12px rgba(26,107,60,0.12);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+        }
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Georgia', 'Times New Roman', serif;
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0; padding: 0;
+        }
+        /* NAV */
+        nav.topnav {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            position: sticky; top:0; z-index:1000;
+            min-height: 56px;
+            flex-wrap: wrap;
+        }
+        nav.topnav .brand {
+            font-family: 'Georgia', serif;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent);
+            letter-spacing: 1px;
+            margin-right: 2rem;
+            text-decoration: none;
+        }
+        nav.topnav a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            padding: 0.85rem 1rem;
+            font-size: 0.88rem;
+            transition: color 0.2s, background 0.2s;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        nav.topnav a:hover, nav.topnav a.active {
+            color: #fff;
+            background: rgba(255,255,255,0.12);
+        }
+        /* CONTAINER */
+        .container {
+            max-width: 1200px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+        /* INTRO */
+        .intro-section {
+            background: var(--card-bg);
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1.25rem;
+            border-left: 5px solid var(--primary-color);
+            box-shadow: var(--shadow-sm);
+        }
+        .intro-section h1 {
+            font-size: 1.05rem;
+            margin: 0 0 0.3rem 0;
+            color: var(--primary-dark);
+        }
+        .intro-section p { margin: 0; color: var(--text-secondary); font-size: 0.9rem; }
+        /* CONFIG */
+        .config-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.25rem;
+        }
+        .config-header {
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            color: #fff;
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .config-body { padding: 1rem; }
+        /* TOOLS GRID */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.2rem;
+        }
+        .tool-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.2s;
+        }
+        .tool-card:hover { box-shadow: var(--shadow-md); }
+        .tool-header {
+            background: linear-gradient(90deg, var(--primary-dark), var(--primary-color));
+            color: #fff;
+            padding: 0.7rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .tool-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        .tool-title i { margin-right: 6px; }
+        .tool-badge {
+            font-size: 0.7rem;
+            background: var(--accent);
+            color: var(--primary-dark);
+            padding: 2px 7px;
+            border-radius: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .tool-body { padding: 1rem; flex: 1; }
+        /* FORM */
+        .input-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .input-group { flex: 1; min-width: 120px; }
+        .input-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.42rem 0.65rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            background: #fafafa;
+            color: var(--text-main);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: 'Courier New', monospace;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(26,107,60,0.12);
+        }
+        .btn-row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .btn {
+            padding: 0.45rem 1rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .btn-primary {
+            background: var(--primary-color);
+            color: #fff;
+            flex: 1;
+        }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-sm {
+            padding: 3px 10px;
+            font-size: 0.78rem;
+        }
+        .btn-copy {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color) !important;
+        }
+        .btn-copy:hover { background: #f0f0f0; }
+        /* MAP */
+        .map-wrappers { margin-top: 1.5rem; }
+        .map-helper {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+        #map {
+            height: 380px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+        /* INFO */
+        .info-section {
+            margin-top: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+        .info-section h5 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.8rem;
+            font-family: 'Georgia', serif;
+        }
+        .info-section p, .info-section li { font-size: 0.9rem; color: #555; }
+        /* FOOTER */
+        .footer-info {
+            background: var(--primary-dark);
+            color: #cde8d5;
+            padding: 2rem 1.5rem 1rem;
+            margin-top: 2.5rem;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .info-col h5 { color: var(--accent); font-size: 0.95rem; margin-bottom: 0.75rem; }
+        .info-col ul { list-style: none; padding: 0; margin: 0; }
+        .info-col ul li { margin-bottom: 0.35rem; font-size: 0.85rem; }
+        .info-col a { color: #a8d8b9; text-decoration: none; }
+        .info-col a:hover { color: #fff; text-decoration: underline; }
+        .social-bar { display: flex; gap: 0.75rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .social-icon {
+            width: 32px; height: 32px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #cde8d5 !important; font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+        .social-icon:hover { background: var(--primary-light); }
+        /* Result highlight */
+        .result-value {
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-family: 'Courier New', monospace;
+        }
+        /* Datum note */
+        .datum-note {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.4rem;
+            font-style: italic;
+        }
+        @media (max-width: 600px) {
+            .tools-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="topnav">
+    <a class="brand" href="#">WebGIS DZ</a>
+    <a href="index.html">Home</a>
+    <a href="Bulk-coord-converter.html">Bulk Converter</a>
+    <a href="#" class="active">Coordinates Converter</a>
+    <a href="About this site.html">About</a>
+</nav>
+
+<div class="container">
+
+    <!-- Intro -->
+    <div class="intro-section">
+        <h1>Algeria Geodetic Coordinate Converter</h1>
+        <p>Convert between <strong>Geographic (DD / DMS)</strong>, <strong>UTM WGS84</strong>,
+           <strong>UTM Nord Sahara 1959</strong> (Clarke 1880, Algeria) and <strong>Lambert Voirol Ancien</strong>.
+        </p>
+    </div>
+
+    <!-- Configuration -->
+    <div class="config-card">
+        <div class="config-header"><i class="fas fa-cog"></i> &nbsp;Configuration</div>
+        <div class="config-body">
+            <div style="display:flex; gap:2rem; flex-wrap:wrap;">
+                <div style="flex:1; min-width:220px;">
+                    <label for="coordPrecision" class="input-label">Decimal Precision</label>
+                    <input type="number" id="coordPrecision" class="form-input" value="3" min="0" max="10">
+                </div>
+                <div style="flex:2; min-width:260px;">
+                    <div class="datum-note" style="margin-top:1.2rem;">
+                        ⚠ UTM Nord Sahara 1959 uses the <strong>Clarke 1880 (RGS)</strong> ellipsoid and a
+                        7-parameter Helmert shift from WGS84. Lambert Voirol Ancien uses the
+                        <strong>Clarke 1880</strong> ellipsoid with the classic French colonial projection centred
+                        on Algiers.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tools Grid -->
+    <div class="tools-grid">
+
+        <!-- 1. Decimal Degrees -->
+        <div class="tool-card">
+            <div class="tool-header">
+                <h3 class="tool-title"><i class="fas fa-map-pin"></i> Decimal Degrees (WGS84)</h3>
+                <div style="display:flex;gap:5px;align-items:center;">
+                    <span class="tool-badge">GPS</span>
+                    <button class="btn btn-sm btn-copy" onclick="copyDecimal(this)" title="Copy">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label class="input-label" for="decimalLatitude">Latitude (Y)</label>
+                        <input type="number" id="decimalLatitude" class="form-input" step="any" placeholder="36.000000">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="decimalLongitude">Longitude (X)</label>
+                        <input type="number" id="decimalLongitude" class="form-input" step="any" placeholder="3.000000">
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="convertDecimal(); updateMap();">Convert</button>
+                    <button class="btn btn-sm btn-copy" onclick="openGoogleMaps()" title="Google Maps" style="padding:0.45rem 0.8rem;">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </button>
+                </div>
+                <p class="datum-note">Enter WGS84 decimal degrees. Positive = North / East.</p>
+            </div>
+        </div>
+
+        <!-- 2. DMS -->
+        <div class="tool-card">
+            <div class="tool-header">
+                <h3 class="tool-title"><i class="far fa-compass"></i> Degrees, Minutes, Seconds</h3>
+                <div style="display:flex;gap:5px;align-items:center;">
+                    <span class="tool-badge">Topography</span>
+                    <button class="btn btn-sm btn-copy" onclick="copyDMS(this)" title="Copy">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="tool-body">
+                <label class="input-label">Latitude</label>
+                <div class="input-row" style="gap:0.4rem;">
+                    <input type="number" id="latDegrees" class="form-input" placeholder="Deg" style="flex:1">
+                    <input type="number" id="latMinutes" class="form-input" placeholder="Min" style="flex:1">
+                    <input type="number" id="latSeconds" class="form-input" placeholder="Sec" step="any" style="flex:1.5">
+                    <select id="northOrSouth" class="form-select" style="flex:0 0 58px;">
+                        <option value="N">N</option>
+                        <option value="S">S</option>
+                    </select>
+                </div>
+                <label class="input-label">Longitude</label>
+                <div class="input-row" style="gap:0.4rem;">
+                    <input type="number" id="lonDegrees" class="form-input" placeholder="Deg" style="flex:1">
+                    <input type="number" id="lonMinutes" class="form-input" placeholder="Min" style="flex:1">
+                    <input type="number" id="lonSeconds" class="form-input" placeholder="Sec" step="any" style="flex:1.5">
+                    <select id="westOrEast" class="form-select" style="flex:0 0 58px;">
+                        <option value="E">E</option>
+                        <option value="W">W</option>
+                    </select>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="convertDMS(); updateMap();">Convert DMS</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. UTM WGS84 -->
+        <div class="tool-card">
+            <div class="tool-header">
+                <h3 class="tool-title"><i class="fas fa-th-large"></i> UTM Standard (WGS84)</h3>
+                <div style="display:flex;gap:5px;align-items:center;">
+                    <span class="tool-badge">WGS84</span>
+                    <button class="btn btn-sm btn-copy" onclick="copyUTM(this)" title="Copy">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label class="input-label" for="utmZone">Zone</label>
+                        <input type="number" id="utmZone" class="form-input" placeholder="30–32">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="utmHemi">Hemisphere</label>
+                        <select id="utmHemi" class="form-select">
+                            <option value="N" selected>North (N)</option>
+                            <option value="S">South (S)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label class="input-label" for="utmEasting">Easting (X) m</label>
+                        <input type="number" id="utmEasting" class="form-input" placeholder="Metres">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="utmNorthing">Northing (Y) m</label>
+                        <input type="number" id="utmNorthing" class="form-input" placeholder="Metres">
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="convertUTM(); updateMap();">Convert UTM</button>
+                </div>
+                <p class="datum-note">WGS84 / UTM — zones 30, 31, 32 cover Algeria.</p>
+            </div>
+        </div>
+
+        <!-- 4. UTM Nord Sahara 1959 -->
+        <div class="tool-card">
+            <div class="tool-header">
+                <h3 class="tool-title"><i class="fas fa-globe-africa"></i> UTM Nord Sahara 1959</h3>
+                <div style="display:flex;gap:5px;align-items:center;">
+                    <span class="tool-badge">Algeria</span>
+                    <button class="btn btn-sm btn-copy" onclick="copyNS59(this)" title="Copy">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label class="input-label" for="ns59Zone">Zone</label>
+                        <input type="number" id="ns59Zone" class="form-input" placeholder="30–32" value="31">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="ns59Hemi">Hemisphere</label>
+                        <select id="ns59Hemi" class="form-select">
+                            <option value="N" selected>North (N)</option>
+                            <option value="S">South (S)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label class="input-label" for="ns59Easting">Easting (X) m</label>
+                        <input type="number" id="ns59Easting" class="form-input" placeholder="Metres">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="ns59Northing">Northing (Y) m</label>
+                        <input type="number" id="ns59Northing" class="form-input" placeholder="Metres">
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="convertNS59(); updateMap();">Convert NS59</button>
+                </div>
+                <p class="datum-note">Clarke 1880 (RGS) ellipsoid — Helmert shift applied to WGS84.</p>
+            </div>
+        </div>
+
+        <!-- 5. Lambert Voirol Ancien -->
+        <div class="tool-card">
+            <div class="tool-header">
+                <h3 class="tool-title"><i class="fas fa-drafting-compass"></i> Lambert Voirol Ancien</h3>
+                <div style="display:flex;gap:5px;align-items:center;">
+                    <span class="tool-badge">Algérie</span>
+                    <button class="btn btn-sm btn-copy" onclick="copyLambert(this)" title="Copy">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="tool-body">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label class="input-label" for="lambertZone">Lambert Zone</label>
+                        <select id="lambertZone" class="form-select">
+                            <option value="1">Nord Algérie (Zone I)</option>
+                            <option value="2">Sud Algérie (Zone II)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <div class="input-group">
+                        <label class="input-label" for="lambertX">X (Easting) m</label>
+                        <input type="number" id="lambertX" class="form-input" placeholder="Metres">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="lambertY">Y (Northing) m</label>
+                        <input type="number" id="lambertY" class="form-input" placeholder="Metres">
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="convertLambert(); updateMap();">Convert Lambert</button>
+                </div>
+                <p class="datum-note">Lambert Voirol Ancien — Algérie Nord / Sud. Clarke 1880.</p>
+            </div>
+        </div>
+
+    </div><!-- /tools-grid -->
+
+    <!-- Map -->
+    <div class="map-wrappers" style="margin-top:1.5rem;">
+        <div class="map-helper">
+            <i class="fas fa-info-circle" style="color:var(--primary-color);"></i>
+            Drag the marker to read coordinates. All outputs update automatically.
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <!-- Results Panel -->
+    <div id="resultsPanel" style="display:none; margin-top:1.5rem; background:white; padding:1.25rem; border-radius:var(--radius-md); box-shadow:var(--shadow-sm); border-left:5px solid var(--accent);">
+        <h5 style="margin:0 0 1rem; color:var(--primary-dark); font-family:'Georgia',serif;">📍 Conversion Results</h5>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1rem;" id="resultsGrid"></div>
+    </div>
+
+    <!-- Info Section -->
+    <div class="info-section">
+        <h5>About the Coordinate Systems</h5>
+        <p><strong>Geographic Coordinates (Lat/Lon WGS84):</strong> Standard GPS system using decimal degrees on the WGS84 ellipsoid.</p>
+        <p><strong>UTM WGS84:</strong> Universal Transverse Mercator on the WGS84 ellipsoid — the international standard for GPS-based cartography. Zones 30, 31 and 32 cover Algeria.</p>
+        <p><strong>UTM Nord Sahara 1959 (Clarke 1880):</strong> Algerian geodetic datum based on the Clarke 1880 (RGS) ellipsoid, historically used for topographic mapping in Algeria. A 7-parameter Helmert transformation is applied to shift between WGS84 and this datum (ΔX=−209m, ΔY=87m, ΔZ=−210m — IGN values for Nord Sahara 1959).</p>
+        <p><strong>Lambert Voirol Ancien (Algérie):</strong> Conical conformal projection used during the French colonial period. Zone I (Nord Algérie) has a parallel of origin of 36°00′N and a false northing of 300,000 m. Zone II (Sud Algérie) has a parallel of 33°18′N and a false northing of 200,000 m. Both use a central meridian of 2°42′E (Paris meridian offset) and are based on the Clarke 1880 ellipsoid.</p>
+
+        <h5 style="margin-top:1.5rem;">Important Notes</h5>
+        <ul>
+            <li>The Helmert shift parameters for Nord Sahara 1959 are those published by the IGN (Institut Géographique National). Accuracy is approximately ±5 m.</li>
+            <li>Lambert Voirol Ancien uses the <em>Paris meridian</em> as origin; the central meridian in Greenwich degrees is 2.596898° E (= 2°42′E = 0° Paris).</li>
+            <li>For high-precision surveying, always verify against official Algerian geodetic control points.</li>
+        </ul>
+    </div>
+
+</div><!-- /container -->
+
+<!-- Footer -->
+<div class="footer-info">
+    <div class="info-grid">
+        <div class="info-col">
+            <h5>Systems Supported</h5>
+            <ul>
+                <li>Geographic DD / DMS (WGS84)</li>
+                <li>UTM WGS84</li>
+                <li>UTM Nord Sahara 1959</li>
+                <li>Lambert Voirol Ancien (I &amp; II)</li>
+            </ul>
+        </div>
+        <div class="info-col">
+            <h5>Features</h5>
+            <ul>
+                <li><a href="Bulk-coord-converter.html">Bulk Coordinates Converter</a></li>
+                <li><a href="About this site.html">About the site</a></li>
+                <li><a href="https://abconsultdz.wordpress.com/">ABConsultingDZ Blog</a></li>
+            </ul>
+        </div>
+        <div class="info-col">
+            <h5>Follow Us</h5>
+            <p>Join our GIS community.</p>
+            <div class="social-bar">
+                <a href="https://www.linkedin.com/in/ahmed-benayache-7b141b72" class="social-icon" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                <a href="" class="social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </div>
+    <div style="text-align:center; margin-top:2rem; color:#8db89a; font-size:0.82rem;">
+        &copy; 2026 ABConsultingDZ Office. All rights reserved.
+    </div>
+</div>
+
+<!-- External Scripts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// ============================================================
+//  ELLIPSOID DEFINITIONS
+// ============================================================
+const ELLIPSOIDS = {
+    WGS84:  { a: 6378137.0,     f: 1/298.257223563 },
+    CLRK80: { a: 6378249.145,   f: 1/293.465 }   // Clarke 1880 (RGS)
+};
+
+// ============================================================
+//  HELMERT 7-PARAMETER SHIFTS
+//  Nord Sahara 1959 → WGS84  (IGN values, approximate ±5 m)
+//  Signs: these transform NS59 XYZ → WGS84 XYZ
+// ============================================================
+const NS59_TO_WGS84 = { dx: 209, dy: -87, dz: 210 };   // ΔX,ΔY,ΔZ in metres
+// Reverse (WGS84 → NS59):
+const WGS84_TO_NS59 = { dx: -209, dy: 87, dz: -210 };
+
+// ============================================================
+//  LAMBERT VOIROL ANCIEN PARAMETERS (Clarke 1880)
+//  Central meridian = Paris meridian = 2.596898° E (Greenwich)
+// ============================================================
+const LAMBERT_ZONES = {
+    1: { // Nord Algérie
+        lat0: 36.0 * Math.PI/180,
+        lon0: 2.596898 * Math.PI/180,
+        k0:   0.999625544,
+        FE:   500000,
+        FN:   300000
+    },
+    2: { // Sud Algérie
+        lat0: 33.3 * Math.PI/180,  // 33°18' N
+        lon0: 2.596898 * Math.PI/180,
+        k0:   0.999625769,
+        FE:   500000,
+        FN:   200000
+    }
+};
+
+// ============================================================
+//  CORE MATH UTILITIES
+// ============================================================
+function toRad(d){ return d * Math.PI / 180; }
+function toDeg(r){ return r * 180 / Math.PI; }
+
+/** Geocentric (ECEF) XYZ from geographic lat/lon (radians) + ellipsoid */
+function llh2xyz(lat, lon, h, ell){
+    const a = ell.a, f = ell.f;
+    const e2 = 2*f - f*f;
+    const N = a / Math.sqrt(1 - e2 * Math.sin(lat)**2);
+    return {
+        x: (N + h) * Math.cos(lat) * Math.cos(lon),
+        y: (N + h) * Math.cos(lat) * Math.sin(lon),
+        z: (N * (1-e2) + h) * Math.sin(lat)
+    };
+}
+
+/** Geographic lat/lon (radians) from ECEF XYZ + ellipsoid */
+function xyz2llh(x, y, z, ell){
+    const a = ell.a, f = ell.f;
+    const e2 = 2*f - f*f;
+    const lon = Math.atan2(y, x);
+    let lat = Math.atan2(z, Math.sqrt(x*x + y*y) * (1 - e2));
+    for(let i=0; i<10; i++){
+        const N = a / Math.sqrt(1 - e2*Math.sin(lat)**2);
+        lat = Math.atan2(z + e2*N*Math.sin(lat), Math.sqrt(x*x + y*y));
+    }
+    return { lat, lon, h: 0 };
+}
+
+/** 3-parameter Helmert shift (translation only, no rotation/scale) */
+function helmert(xyz, shift){
+    return { x: xyz.x + shift.dx, y: xyz.y + shift.dy, z: xyz.z + shift.dz };
+}
+
+/** WGS84 lat/lon (degrees) → NS59 lat/lon (degrees) */
+function wgs84ToNS59(latDeg, lonDeg){
+    const wgs = ELLIPSOIDS.WGS84;
+    const clrk = ELLIPSOIDS.CLRK80;
+    const xyz_wgs = llh2xyz(toRad(latDeg), toRad(lonDeg), 0, wgs);
+    const xyz_ns59 = helmert(xyz_wgs, WGS84_TO_NS59);
+    const ll = xyz2llh(xyz_ns59.x, xyz_ns59.y, xyz_ns59.z, clrk);
+    return { lat: toDeg(ll.lat), lon: toDeg(ll.lon) };
+}
+
+/** NS59 lat/lon (degrees) → WGS84 lat/lon (degrees) */
+function ns59ToWgs84(latDeg, lonDeg){
+    const wgs = ELLIPSOIDS.WGS84;
+    const clrk = ELLIPSOIDS.CLRK80;
+    const xyz_ns59 = llh2xyz(toRad(latDeg), toRad(lonDeg), 0, clrk);
+    const xyz_wgs = helmert(xyz_ns59, NS59_TO_WGS84);
+    const ll = xyz2llh(xyz_wgs.x, xyz_wgs.y, xyz_wgs.z, wgs);
+    return { lat: toDeg(ll.lat), lon: toDeg(ll.lon) };
+}
+
+// ============================================================
+//  UTM CONVERSIONS (generic — works for any ellipsoid)
+// ============================================================
+function latLonToUTM(latDeg, lonDeg, ell){
+    const a = ell.a, f = ell.f;
+    const e2 = 2*f - f*f;
+    const e4 = e2*e2, e6 = e2*e2*e2;
+    const k0 = 0.9996;
+    const lat = toRad(latDeg), lon = toRad(lonDeg);
+    const zone = Math.floor((lonDeg + 180)/6) + 1;
+    const lon0 = toRad((zone-1)*6 - 180 + 3);
+    const N = a / Math.sqrt(1 - e2*Math.sin(lat)**2);
+    const T = Math.tan(lat)**2;
+    const C = (e2/(1-e2)) * Math.cos(lat)**2;
+    const A = Math.cos(lat) * (lon - lon0);
+    const M = a * (
+        (1 - e2/4 - 3*e4/64 - 5*e6/256)*lat
+        - (3*e2/8 + 3*e4/32 + 45*e6/1024)*Math.sin(2*lat)
+        + (15*e4/256 + 45*e6/1024)*Math.sin(4*lat)
+        - (35*e6/3072)*Math.sin(6*lat)
+    );
+    const easting = k0*N*(A + (1-T+C)*A**3/6 + (5-18*T+T*T+72*C-58*(e2/(1-e2)))*A**5/120) + 500000;
+    const FN = latDeg < 0 ? 10000000 : 0;
+    const northing = k0*(M + N*Math.tan(lat)*(A*A/2 + (5-T+9*C+4*C*C)*A**4/24 + (61-58*T+T*T+600*C-330*(e2/(1-e2)))*A**6/720)) + FN;
+    const hemi = latDeg >= 0 ? 'N' : 'S';
+    return { zone, hemi, easting, northing };
+}
+
+function utmToLatLon(zone, hemi, easting, northing, ell){
+    const a = ell.a, f = ell.f;
+    const e2 = 2*f - f*f;
+    const e4 = e2*e2, e6 = e2*e2*e2;
+    const e1 = (1 - Math.sqrt(1-e2)) / (1 + Math.sqrt(1-e2));
+    const k0 = 0.9996;
+    const FN = hemi === 'S' ? 10000000 : 0;
+    const x = easting - 500000;
+    const y = northing - FN;
+    const lon0 = toRad((zone-1)*6 - 180 + 3);
+    const M = y / k0;
+    const mu = M / (a*(1 - e2/4 - 3*e4/64 - 5*e6/256));
+    const phi1 = mu
+        + (3*e1/2 - 27*e1**3/32)*Math.sin(2*mu)
+        + (21*e1**2/16 - 55*e1**4/32)*Math.sin(4*mu)
+        + (151*e1**3/96)*Math.sin(6*mu)
+        + (1097*e1**4/512)*Math.sin(8*mu);
+    const N1 = a / Math.sqrt(1 - e2*Math.sin(phi1)**2);
+    const T1 = Math.tan(phi1)**2;
+    const C1 = (e2/(1-e2))*Math.cos(phi1)**2;
+    const R1 = a*(1-e2) / Math.pow(1-e2*Math.sin(phi1)**2, 1.5);
+    const D = x / (N1*k0);
+    const lat = phi1 - (N1*Math.tan(phi1)/R1)*(D*D/2 - (5+3*T1+10*C1-4*C1*C1-9*(e2/(1-e2)))*D**4/24 + (61+90*T1+298*C1+45*T1*T1-252*(e2/(1-e2))-3*C1*C1)*D**6/720);
+    const lon = lon0 + (D - (1+2*T1+C1)*D**3/6 + (5-2*C1+(28*T1)-3*C1*C1+8*(e2/(1-e2))+24*T1*T1)*D**5/120)/Math.cos(phi1);
+    return { lat: toDeg(lat), lon: toDeg(lon) };
+}
+
+// ============================================================
+//  LAMBERT VOIROL ANCIEN (Conical Conformal — Tangent)
+// ============================================================
+function lambertToLatLon(X, Y, zoneNum){
+    const p = LAMBERT_ZONES[zoneNum];
+    const ell = ELLIPSOIDS.CLRK80;
+    const a = ell.a, f = ell.f;
+    const e2 = 2*f - f*f;
+    const e = Math.sqrt(e2);
+    const lat0 = p.lat0, lon0 = p.lon0;
+
+    // Standard parallel = lat0 (tangent cone)
+    const m0 = Math.cos(lat0) / Math.sqrt(1 - e2*Math.sin(lat0)**2);
+    const t0 = Math.tan(Math.PI/4 - lat0/2) /
+                Math.pow((1 - e*Math.sin(lat0))/(1 + e*Math.sin(lat0)), e/2);
+    const n = Math.sin(lat0);
+    const F = m0 / (n * Math.pow(t0, n));
+    const rho0 = a * F * Math.pow(t0, n) * p.k0;
+
+    const dx = X - p.FE;
+    const dy = rho0 - (Y - p.FN);
+    const rho = Math.sqrt(dx*dx + dy*dy) * (n < 0 ? -1 : 1);
+    const theta = Math.atan2(dx, dy);
+    const lon_rad = theta/n + lon0;
+    const t = Math.pow(rho / (a * F * p.k0), 1/n);
+    let lat_rad = Math.PI/2 - 2*Math.atan(t);
+    for(let i=0; i<20; i++){
+        lat_rad = Math.PI/2 - 2*Math.atan(t * Math.pow((1-e*Math.sin(lat_rad))/(1+e*Math.sin(lat_rad)), e/2));
+    }
+    // Result is in Clarke 1880 — convert to WGS84
+    const clrkLL = { lat: toDeg(lat_rad), lon: toDeg(lon_rad) };
+    const wgs = ns59ToWgs84(clrkLL.lat, clrkLL.lon);
+    return { clrk: clrkLL, wgs84: wgs };
+}
+
+function latLonToLambert(latDeg, lonDeg, zoneNum){
+    // Input WGS84 → convert to Clarke 1880 first
+    const clrkLL = wgs84ToNS59(latDeg, lonDeg); // same shift applies for Lambert Clarke 1880
+    const lat = toRad(clrkLL.lat);
+    const lon = toRad(clrkLL.lon);
+    const p = LAMBERT_ZONES[zoneNum];
+    const ell = ELLIPSOIDS.CLRK80;
+    const a = ell.a, f = ell.f;
+    const e2 = 2*f - f*f;
+    const e = Math.sqrt(e2);
+    const lat0 = p.lat0, lon0 = p.lon0;
+    const m0 = Math.cos(lat0) / Math.sqrt(1 - e2*Math.sin(lat0)**2);
+    const t0 = Math.tan(Math.PI/4 - lat0/2) /
+                Math.pow((1 - e*Math.sin(lat0))/(1 + e*Math.sin(lat0)), e/2);
+    const n = Math.sin(lat0);
+    const F = m0 / (n * Math.pow(t0, n));
+    const rho0 = a * F * Math.pow(t0, n) * p.k0;
+    const t = Math.tan(Math.PI/4 - lat/2) /
+              Math.pow((1 - e*Math.sin(lat))/(1 + e*Math.sin(lat)), e/2);
+    const rho = a * F * Math.pow(t, n) * p.k0;
+    const theta = n * (lon - lon0);
+    const X = p.FE + rho * Math.sin(theta);
+    const Y = p.FN + rho0 - rho * Math.cos(theta);
+    return { X, Y };
+}
+
+// ============================================================
+//  DMS HELPERS
+// ============================================================
+function decToDMS(deg){
+    const sign = deg < 0 ? -1 : 1;
+    const d = Math.abs(deg);
+    const D = Math.floor(d);
+    const M = Math.floor((d - D) * 60);
+    const S = ((d - D) * 60 - M) * 60;
+    return { d: sign*D, m: M, s: S };
+}
+
+function formatDMS(deg, isLat){
+    const dms = decToDMS(deg);
+    const dir = isLat ? (deg>=0?'N':'S') : (deg>=0?'E':'W');
+    return `${Math.abs(dms.d)}° ${dms.m}' ${dms.s.toFixed(2)}" ${dir}`;
+}
+
+// ============================================================
+//  MAP SETUP (Leaflet)
+// ============================================================
+let map, marker;
+window.addEventListener('load', function(){
+    map = L.map('map').setView([28, 3], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors', maxZoom: 19
+    }).addTo(map);
+    marker = L.marker([28, 3], {draggable: true}).addTo(map);
+    marker.on('dragend', function(){
+        const ll = marker.getLatLng();
+        populateAll(ll.lat, ll.lng);
+    });
+});
+
+function updateMap(){
+    const lat = parseFloat(document.getElementById('decimalLatitude').value);
+    const lon = parseFloat(document.getElementById('decimalLongitude').value);
+    if(!isNaN(lat) && !isNaN(lon)){
+        if(marker) marker.setLatLng([lat, lon]);
+        if(map) map.setView([lat, lon], 10);
+    }
+}
+
+// ============================================================
+//  POPULATE ALL FIELDS FROM WGS84 lat/lon
+// ============================================================
+function populateAll(lat, lon){
+    const p = parseInt(document.getElementById('coordPrecision').value) || 3;
+    // Decimal
+    document.getElementById('decimalLatitude').value = lat.toFixed(6);
+    document.getElementById('decimalLongitude').value = lon.toFixed(6);
+    // DMS
+    const dmsLat = decToDMS(lat), dmsLon = decToDMS(lon);
+    document.getElementById('latDegrees').value = Math.abs(dmsLat.d);
+    document.getElementById('latMinutes').value = dmsLat.m;
+    document.getElementById('latSeconds').value = dmsLat.s.toFixed(3);
+    document.getElementById('northOrSouth').value = lat >= 0 ? 'N' : 'S';
+    document.getElementById('lonDegrees').value = Math.abs(dmsLon.d);
+    document.getElementById('lonMinutes').value = dmsLon.m;
+    document.getElementById('lonSeconds').value = dmsLon.s.toFixed(3);
+    document.getElementById('westOrEast').value = lon >= 0 ? 'E' : 'W';
+    // UTM WGS84
+    const utm = latLonToUTM(lat, lon, ELLIPSOIDS.WGS84);
+    document.getElementById('utmZone').value = utm.zone;
+    document.getElementById('utmHemi').value = utm.hemi;
+    document.getElementById('utmEasting').value = utm.easting.toFixed(p);
+    document.getElementById('utmNorthing').value = utm.northing.toFixed(p);
+    // UTM NS59
+    const ns59ll = wgs84ToNS59(lat, lon);
+    const ns59utm = latLonToUTM(ns59ll.lat, ns59ll.lon, ELLIPSOIDS.CLRK80);
+    document.getElementById('ns59Zone').value = ns59utm.zone;
+    document.getElementById('ns59Hemi').value = ns59utm.hemi;
+    document.getElementById('ns59Easting').value = ns59utm.easting.toFixed(p);
+    document.getElementById('ns59Northing').value = ns59utm.northing.toFixed(p);
+    // Lambert Zone 1 (default)
+    const lz = parseInt(document.getElementById('lambertZone').value) || 1;
+    try {
+        const lmb = latLonToLambert(lat, lon, lz);
+        document.getElementById('lambertX').value = lmb.X.toFixed(p);
+        document.getElementById('lambertY').value = lmb.Y.toFixed(p);
+    } catch(e){ /* out of range */ }
+    showResultsPanel(lat, lon, utm, ns59utm, p);
+}
+
+function showResultsPanel(lat, lon, utm, ns59utm, p){
+    const panel = document.getElementById('resultsPanel');
+    const grid = document.getElementById('resultsGrid');
+    panel.style.display = 'block';
+    const lz = parseInt(document.getElementById('lambertZone').value) || 1;
+    let lmbStr = '';
+    try {
+        const lmb = latLonToLambert(lat, lon, lz);
+        lmbStr = `X = ${lmb.X.toFixed(p)} m<br>Y = ${lmb.Y.toFixed(p)} m`;
+    } catch(e){ lmbStr = 'Out of zone range'; }
+    grid.innerHTML = `
+    <div style="background:#f8fcf9;border:1px solid var(--border-color);border-radius:8px;padding:0.9rem;">
+        <strong style="color:var(--primary-dark);">🌍 Geographic (WGS84)</strong><br>
+        <span class="result-value">Lat: ${lat.toFixed(6)}°</span><br>
+        <span class="result-value">Lon: ${lon.toFixed(6)}°</span><br>
+        <small style="color:#888;">${formatDMS(lat,true)} / ${formatDMS(lon,false)}</small>
+    </div>
+    <div style="background:#f8fcf9;border:1px solid var(--border-color);border-radius:8px;padding:0.9rem;">
+        <strong style="color:var(--primary-dark);">📐 UTM WGS84</strong><br>
+        Zone: <span class="result-value">${utm.zone}${utm.hemi}</span><br>
+        E: <span class="result-value">${utm.easting.toFixed(p)} m</span><br>
+        N: <span class="result-value">${utm.northing.toFixed(p)} m</span>
+    </div>
+    <div style="background:#f8fcf9;border:1px solid var(--border-color);border-radius:8px;padding:0.9rem;">
+        <strong style="color:var(--primary-dark);">🇩🇿 UTM Nord Sahara 1959</strong><br>
+        Zone: <span class="result-value">${ns59utm.zone}${ns59utm.hemi}</span><br>
+        E: <span class="result-value">${ns59utm.easting.toFixed(p)} m</span><br>
+        N: <span class="result-value">${ns59utm.northing.toFixed(p)} m</span>
+    </div>
+    <div style="background:#f8fcf9;border:1px solid var(--border-color);border-radius:8px;padding:0.9rem;">
+        <strong style="color:var(--primary-dark);">📏 Lambert Voirol Ancien (Zone ${lz})</strong><br>
+        ${lmbStr}
+    </div>`;
+}
+
+// ============================================================
+//  CONVERTER ENTRY POINTS
+// ============================================================
+function convertDecimal(){
+    const lat = parseFloat(document.getElementById('decimalLatitude').value);
+    const lon = parseFloat(document.getElementById('decimalLongitude').value);
+    if(isNaN(lat)||isNaN(lon)) return alert('Please enter valid decimal coordinates.');
+    populateAll(lat, lon);
+}
+
+function convertDMS(){
+    const D = parseFloat(document.getElementById('latDegrees').value)||0;
+    const M = parseFloat(document.getElementById('latMinutes').value)||0;
+    const S = parseFloat(document.getElementById('latSeconds').value)||0;
+    const ns= document.getElementById('northOrSouth').value;
+    const D2= parseFloat(document.getElementById('lonDegrees').value)||0;
+    const M2= parseFloat(document.getElementById('lonMinutes').value)||0;
+    const S2= parseFloat(document.getElementById('lonSeconds').value)||0;
+    const ew= document.getElementById('westOrEast').value;
+    let lat = D + M/60 + S/3600; if(ns==='S') lat=-lat;
+    let lon = D2+ M2/60+ S2/3600; if(ew==='W') lon=-lon;
+    populateAll(lat, lon);
+    updateMap();
+}
+
+function convertUTM(){
+    const zone = parseInt(document.getElementById('utmZone').value);
+    const hemi = document.getElementById('utmHemi').value;
+    const E = parseFloat(document.getElementById('utmEasting').value);
+    const N = parseFloat(document.getElementById('utmNorthing').value);
+    if(!zone||isNaN(E)||isNaN(N)) return alert('Please enter valid UTM values.');
+    const ll = utmToLatLon(zone, hemi, E, N, ELLIPSOIDS.WGS84);
+    populateAll(ll.lat, ll.lon);
+    updateMap();
+}
+
+function convertNS59(){
+    const zone = parseInt(document.getElementById('ns59Zone').value);
+    const hemi = document.getElementById('ns59Hemi').value;
+    const E = parseFloat(document.getElementById('ns59Easting').value);
+    const N = parseFloat(document.getElementById('ns59Northing').value);
+    if(!zone||isNaN(E)||isNaN(N)) return alert('Please enter valid NS59 UTM values.');
+    // Convert from Clarke 1880 UTM to lat/lon (Clarke 1880), then to WGS84
+    const clrkll = utmToLatLon(zone, hemi, E, N, ELLIPSOIDS.CLRK80);
+    const wgsll = ns59ToWgs84(clrkll.lat, clrkll.lon);
+    populateAll(wgsll.lat, wgsll.lon);
+    updateMap();
+}
+
+function convertLambert(){
+    const X = parseFloat(document.getElementById('lambertX').value);
+    const Y = parseFloat(document.getElementById('lambertY').value);
+    const lz = parseInt(document.getElementById('lambertZone').value);
+    if(isNaN(X)||isNaN(Y)) return alert('Please enter valid Lambert coordinates.');
+    try {
+        const res = lambertToLatLon(X, Y, lz);
+        populateAll(res.wgs84.lat, res.wgs84.lon);
+        updateMap();
+    } catch(e){ alert('Lambert conversion error: ' + e.message); }
+}
+
+function openGoogleMaps(){
+    const lat = document.getElementById('decimalLatitude').value;
+    const lon = document.getElementById('decimalLongitude').value;
+    if(lat && lon) window.open(`https://www.google.com/maps?q=${lat},${lon}`, '_blank');
+}
+
+// ============================================================
+//  COPY UTILITIES
+// ============================================================
+function copyText(text, btn){
+    navigator.clipboard.writeText(text).then(()=>{
+        const orig = btn.innerHTML; btn.innerHTML='✓';
+        setTimeout(()=>{ btn.innerHTML=orig; }, 1500);
+    });
+}
+function copyDecimal(btn){ copyText(`${document.getElementById('decimalLatitude').value}, ${document.getElementById('decimalLongitude').value}`, btn); }
+function copyDMS(btn){ copyText(`${document.getElementById('latDegrees').value}° ${document.getElementById('latMinutes').value}' ${document.getElementById('latSeconds').value}" ${document.getElementById('northOrSouth').value}, ${document.getElementById('lonDegrees').value}° ${document.getElementById('lonMinutes').value}' ${document.getElementById('lonSeconds').value}" ${document.getElementById('westOrEast').value}`, btn); }
+function copyUTM(btn){ copyText(`${document.getElementById('utmZone').value}${document.getElementById('utmHemi').value} E:${document.getElementById('utmEasting').value} N:${document.getElementById('utmNorthing').value}`, btn); }
+function copyNS59(btn){ copyText(`NS59 ${document.getElementById('ns59Zone').value}${document.getElementById('ns59Hemi').value} E:${document.getElementById('ns59Easting').value} N:${document.getElementById('ns59Northing').value}`, btn); }
+function copyLambert(btn){ copyText(`Lambert Zone ${document.getElementById('lambertZone').value}: X=${document.getElementById('lambertX').value} Y=${document.getElementById('lambertY').value}`, btn); }
+</script>
+</body>
+</html>
