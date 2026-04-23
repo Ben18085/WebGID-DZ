@@ -15,3 +15,5 @@ tool featuring an interactive Leaflet map, coordinate converter, and bulk conver
 - 📤 **Share Coordinates** — Share via kml,text,excel sheet
 - 🔌 **Offline-capable** — All GeoJSON data bundled (map tiles require internet)
 
+Support me with a simple contribution: 
+https://ko-fi.com/ben18085
